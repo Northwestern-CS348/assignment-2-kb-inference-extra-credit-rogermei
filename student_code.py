@@ -129,6 +129,53 @@ class KnowledgeBase(object):
         ####################################################
         # Implementation goes here
         # Not required for the extra credit assignment
+    def kb_explain_helper(self, fact_or_rule, level):
+        if isinstance(fact_or_rule,Fact):
+            fact = self._get_fact(fact_or_rule)
+            if not fact:
+                return("Fact is not in the KB")
+            
+            string = ("  "*level) + "fact: (" + fact.statement.predicate + " " + str(fact.statement.terms[0]) + " " + str(fact.statement.terms[1]) + ")" 
+            if fact.asserted:
+                string += " ASSERTED\n" 
+            else: 
+                string += "\n"
+                level += 1
+                for support in fact.supported_by:
+                    string += ("  "*2*level) + "  SUPPORTED BY\n"
+                    f = support[0]
+                    r = support[1]
+                    string += ("  "*level) + "    " + self.kb_explain_helper(f,level)
+                    string += ("  "*level) + "    " + self.kb_explain_helper(r,level)
+            return string
+        
+        elif isinstance(fact_or_rule,Rule):
+            rule = self._get_rule(fact_or_rule)
+            if not rule:
+                return("Rule is not in the KB")
+                
+            string = ("  "*level) + "rule: (" 
+            for stat in rule.lhs:
+                if rule.lhs.index(stat) == (len(rule.lhs)-1):
+                    string += ("(" + stat.predicate + " " + str(stat.terms[0]) + " " + str(stat.terms[1]) + ")")
+                else:
+                    string += ("(" + stat.predicate + " " + str(stat.terms[0]) + " " + str(stat.terms[1]) + "), ")
+            string += ") -> (" + rule.rhs.predicate + " " + str(rule.rhs.terms[0]) + " " + str(rule.rhs.terms[1]) + ")"
+            if rule.asserted:
+                string += " ASSERTED\n"
+            else:
+                string += "\n"
+                level += 1
+                for support in rule.supported_by:
+                    string += ("  "*2*level) + "  SUPPORTED BY\n"
+                    f = support[0]
+                    r = support[1]
+                    string += ("  "*level) + "    " + self.kb_explain_helper(f,level)
+                    string += ("  "*level) + "    " + self.kb_explain_helper(r,level)
+            return string
+        
+        else:
+            return False
 
     def kb_explain(self, fact_or_rule):
         """
@@ -142,6 +189,54 @@ class KnowledgeBase(object):
         """
         ####################################################
         # Student code goes here
+        # start of actual function
+        level = 0
+        if isinstance(fact_or_rule,Fact):
+            fact = self._get_fact(fact_or_rule)
+            if not fact:
+                return("Fact is not in the KB")
+            
+            string = "fact: (" + fact.statement.predicate + " " + str(fact.statement.terms[0]) + " " + str(fact.statement.terms[1]) + ")" 
+            if fact.asserted:
+                string += " ASSERTED\n" 
+            else: 
+                string += "\n"
+                for support in fact.supported_by:
+                    string += "  SUPPORTED BY\n"
+                    f = support[0]
+                    r = support[1]
+                    string += "    " + self.kb_explain_helper(f,level)
+                    string += "    " + self.kb_explain_helper(r,level)
+            return string
+        
+        elif isinstance(fact_or_rule,Rule):
+            rule = self._get_rule(fact_or_rule)
+            if not rule:
+                return("Rule is not in the KB")
+                
+            string = "rule: (" 
+            for stat in rule.lhs:
+                if rule.lhs.index(stat) == (len(rule.lhs)-1):
+                    string += ("(" + stat.predicate + " " + str(stat.terms[0]) + " " + str(stat.terms[1]) + ")")
+                else:
+                    string += ("(" + stat.predicate + " " + str(stat.terms[0]) + " " + str(stat.terms[1]) + "), ")
+            string += ") -> (" + rule.rhs.predicate + " " + str(rule.rhs.terms[0]) + " " + str(rule.rhs.terms[1]) + ")"
+            if rule.asserted:
+                string += " ASSERTED\n"
+            else:
+                string += "\n"
+                for support in rule.supported_by:
+                    string += "  SUPPORTED BY\n"
+                    f = support[0]
+                    r = support[1]
+                    string += "    " + self.kb_explain_helper(f,level)
+                    string += "    " + self.kb_explain_helper(r,level)
+            return string
+        
+        else:
+            return False
+        
+        
 
 
 class InferenceEngine(object):
